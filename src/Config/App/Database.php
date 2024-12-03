@@ -14,9 +14,9 @@ class Database
         if (self::$connection === null) {
             try {
                 $dsn = sprintf(
-                    "pgsql:host=%s;port=%s;dbname=%s",
+                    "mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4",
                     $_ENV['DB_HOST'],
-                    $_ENV['DB_PORT'] ?? '5432',
+                    $_ENV['DB_PORT'] ?? '3306',
                     $_ENV['DB_NAME']
                 );
 
