@@ -1,16 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
+<?php
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tailwind CSS with PHP</title>
-    <link href="/assets/css/styles.css" rel="stylesheet">
-</head>
+require_once __DIR__ . '/../vendor/autoload.php';
 
-<body class="bg-gray-100 text-center py-10">
-    <h1 class="text-4xl font-bold text-blue-500">Hello, Tailwind CSS with PHP!</h1>
-    <p class="mt-4 text-lg text-gray-700">This is a simple PHP page styled with Tailwind CSS.</p>
-</body>
+use Dotenv\Dotenv;
+use App\Core\Application;
+use App\Core\Exceptions\ErrorHandler;
 
-</html>
+// Load environment variables
+$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
+
+// Start session at the beginning
+session_start();
+
+// Basic error handling
+error_reporting(E_ALL);
+ini_set('display_errors', $_ENV['APP_DEBUG'] ?? false);
+
+// Initialize application
+try {
+    $app = Application::getInstance();
+
+    // Add asset path constant to your configuration
+    define('ASSET_PATH', '/assets');
+
+    // Add routes
+    $router = $app->getRouter();
+
+    // Public routes first
+    $router->get('/login', 'AuthController@login');
+    $router->post('/auth/authenticate', 'AuthController@authenticate');
+    $router->get('/logout', 'AuthController@logout');
+
+    // Protected routes
+    $router->get('/', 'HomeController@index')->middleware('Auth');
+    $router->get('/dashboard', 'DashboardController@index')->middleware('Auth');
+
+    // Run the application
+    $app->run();
+} catch (Exception $e) {
+    error_log($e->getMessage());
+    ErrorHandler::render($e);
+}
